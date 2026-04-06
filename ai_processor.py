@@ -27,7 +27,7 @@ Example output format:
   "salary": "$150,000 - $200,000"
 }"""
     
-    def __init__(self, api_key: str, model: str = 'gemini-flash-latest'):
+    def __init__(self, api_key: str, model: str = 'gemini-2.0-flash'):
         """
         Initialize Google Gemini client
         
