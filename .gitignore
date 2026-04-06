@@ -86,3 +86,5 @@ dmypy.json
 *_key.txt
 credentials.json
 secrets.json
+
+!requirements.txt
