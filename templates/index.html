@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Description Pipeline - AI Extraction Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .card-header h4 {
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+        }
+
+        .btn-outline-success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            border-radius: 8px;
+        }
+
+        .btn-outline-success:hover {
+            background-color: var(--success-color);
+        }
+
+        .form-control, .form-control-file {
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            padding: 12px;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        textarea.form-control {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 40px;
+            text-align: center;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            background-color: rgba(102, 126, 234, 0.03);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+
+        .file-input-label.drag-over {
+            background-color: rgba(102, 126, 234, 0.2);
+            border-color: #764ba2;
+        }
+
+        .file-list {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--light-bg);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .file-list.show {
+            display: block;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.85rem;
+        }
+
+        .section-divider {
+            margin: 2rem 0;
+            padding: 1.5rem 0;
+            border-top: 2px solid #dee2e6;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead {
+            background-color: var(--light-bg);
+        }
+
+        .table thead th {
+            border: none;
+            font-weight: 600;
+            color: #333;
+            padding: 12px;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            padding: 12px;
+            border-color: #dee2e6;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--light-bg);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-badge.success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-badge.failed {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .skills-badge {
+            display: inline-block;
+            background-color: #e7f3ff;
+            color: #0066cc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .alert-info {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-width: 0.15em;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading-content h5 {
+            margin-top: 1rem;
+            color: #333;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h6 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+
+        .title-section {
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .title-section h1 {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-section p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            textarea.form-control {
+                min-height: 150px;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5>Processing Job Descriptions...</h5>
+            <p class="text-muted">This may take a moment</p>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Title Section -->
+        <div class="title-section">
+            <h1><i class="bi bi-briefcase"></i> Job Description Pipeline</h1>
+            <p>Extract and structure job descriptions into actionable data</p>
+        </div>
+
+        <!-- Input Card -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-file-earmark-text"></i> Input Job Descriptions</h4>
+            </div>
+            <div class="card-body">
+                <form id="processForm">
+                    <!-- Text Input Section -->
+                    <div class="form-group">
+                        <label for="jdText" class="form-label fw-600">Paste Job Description</label>
+                        <textarea class="form-control" id="jdText" name="jd_text" 
+                                  placeholder="Paste your raw job description here... You can also upload files below."></textarea>
+                        <small class="text-muted d-block mt-2">
+                            <i class="bi bi-info-circle"></i> Enter a single job description or upload multiple files for batch processing.
+                        </small>
+                    </div>
+
+                    <!-- File Upload Section -->
+                    <div class="section-divider">
+                        <h5 class="mb-0"><i class="bi bi-cloud-upload"></i> Or Upload Files</h5>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="fileInput" name="files" multiple 
+                                   accept=".txt,.pdf" class="form-control-file">
+                            <label for="fileInput" class="file-input-label" id="fileLabel">
+                                <div>
+                                    <i class="bi bi-upload" style="font-size: 2rem; color: #667eea;"></i>
+                                    <p class="mt-3 mb-1 fw-600">Drag and drop files here or click to browse</p>
+                                    <small class="text-muted">Supported formats: PDF, TXT (Max 16MB per file)</small>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="file-list" id="fileList"></div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-play-circle"></i> Process
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i> Clear
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-check-circle"></i> Processing Results</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Stats Row -->
+                    <div class="stats-row" id="statsRow"></div>
+
+                    <!-- Alerts -->
+                    <div id="alertContainer"></div>
+
+                    <!-- Results Table -->
+                    <div class="table-container" id="tableContainer" style="display: none;">
+                        <table class="table table-hover" id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Role</th>
+                                    <th>Skills</th>
+                                    <th>Seniority</th>
+                                    <th>Location</th>
+                                    <th>Salary</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Export Button -->
+                    <div class="mt-4" id="exportContainer" style="display: none;">
+                        <button class="btn btn-outline-success" id="exportBtn">
+                            <i class="bi bi-download"></i> Export as CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global state
+        let currentResults = [];
+
+        // DOM Elements
+        const processForm = document.getElementById('processForm');
+        const jdText = document.getElementById('jdText');
+        const fileInput = document.getElementById('fileInput');
+        const fileLabel = document.getElementById('fileLabel');
+        const fileList = document.getElementById('fileList');
+        const resultsSection = document.getElementById('resultsSection');
+        const alertContainer = document.getElementById('alertContainer');
+        const statsRow = document.getElementById('statsRow');
+        const tableContainer = document.getElementById('tableContainer');
+        const tableBody = document.getElementById('tableBody');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const exportBtn = document.getElementById('exportBtn');
+        const exportContainer = document.getElementById('exportContainer');
+
+        // File handling
+        const files = [];
+
+        fileInput.addEventListener('change', (e) => {
+            files.length = 0;
+            files.push(...e.target.files);
+            updateFileList();
+        });
+
+        fileLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileLabel.classList.add('drag-over');
+        });
+
+        fileLabel.addEventListener('dragleave', () => {
+            fileLabel.classList.remove('drag-over');
+        });
+
+        fileLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileLabel.classList.remove('drag-over');
+            files.length = 0;
+            files.push(...e.dataTransfer.files);
+            updateFileList();
+            fileInput.files = e.dataTransfer.files;
+        });
+
+        function updateFileList() {
+            if (files.length > 0) {
+                fileList.innerHTML = '<h6 class="mb-3">Selected Files:</h6>';
+                fileList.classList.add('show');
+                
+                Array.from(files).forEach((file, index) => {
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <span><i class="bi bi-file"></i> ${file.name}</span>
+                        <span class="badge bg-light text-dark">${fileSize} MB</span>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            } else {
+                fileList.classList.remove('show');
+            }
+        }
+
+        // Form submission
+        processForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const text = jdText.value.trim();
+            if (!text && files.length === 0) {
+                showAlert('danger', 'Please provide either text input or upload files.');
+                return;
+            }
+
+            // Show loading overlay
+            loadingOverlay.classList.add('show');
+
+            try {
+                const formData = new FormData();
+                
+                if (text) {
+                    formData.append('jd_text', text);
+                }
+
+                Array.from(files).forEach(file => {
+                    formData.append('files', file);
+                });
+
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentResults = data.results;
+                    displayResults(data);
+                } else {
+                    showAlert('danger', data.error || 'An error occurred during processing.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', 'Failed to process request. Please try again.');
+            } finally {
+                loadingOverlay.classList.remove('show');
+            }
+        });
+
+        function displayResults(data) {
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Display stats
+            displayStats(data);
+
+            // Display alerts
+            displayAlerts(data);
+
+            // Display table if there are successful results
+            const successfulResults = data.results.filter(r => r.status === 'success');
+            if (successfulResults.length > 0) {
+                displayTable(successfulResults);
+                exportContainer.style.display = 'block';
+            } else {
+                tableContainer.style.display = 'none';
+                exportContainer.style.display = 'none';
+            }
+        }
+
+        function displayStats(data) {
+            statsRow.innerHTML = `
+                <div class="stat-card">
+                    <h6>Total Processed</h6>
+                    <div class="stat-value">${data.total}</div>
+                </div>
+                <div class="stat-card">
+                    <h6>Successful</h6>
+                    <div class="stat-value">${data.successful}</div>
+                </div>
+                <div class="stat-card">
+                    <h6>Failed</h6>
+                    <div class="stat-value">${data.failed}</div>
+                </div>
+            `;
+        }
+
+        function displayAlerts(data) {
+            alertContainer.innerHTML = '';
+
+            if (data.successful > 0) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success';
+                alert.innerHTML = `
+                    <i class="bi bi-check-circle"></i>
+                    <strong>${data.successful} job description(s)</strong> processed successfully!
+                `;
+                alertContainer.appendChild(alert);
+            }
+
+            if (data.failed > 0) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger';
+                alert.innerHTML = `
+                    <i class="bi bi-exclamation-circle"></i>
+                    <strong>${data.failed} job description(s)</strong> failed to process.
+                `;
+                alertContainer.appendChild(alert);
+            }
+        }
+
+        function displayTable(successfulResults) {
+            tableBody.innerHTML = '';
+            
+            successfulResults.forEach(result => {
+                const data = result.data;
+                const skillsList = Array.isArray(data.skills) 
+                    ? data.skills.map(skill => `<span class="skills-badge">${skill}</span>`).join('')
+                    : '<span class="text-muted">N/A</span>';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="status-badge success">Success</span></td>
+                    <td><strong>${data.role || 'N/A'}</strong></td>
+                    <td>${skillsList}</td>
+                    <td>${data.seniority || 'N/A'}</td>
+                    <td>${data.location || 'N/A'}</td>
+                    <td>${data.salary || 'N/A'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            tableContainer.style.display = 'block';
+        }
+
+        function showAlert(type, message) {
+            alertContainer.innerHTML = '';
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.getElementById = 'alert-' + Date.now();
+            alert.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${message}`;
+            alertContainer.appendChild(alert);
+        }
+
+        // Export to CSV
+        exportBtn.addEventListener('click', async () => {
+            if (currentResults.length === 0) {
+                showAlert('info', 'No results to export.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/export', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        results: currentResults
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `job_extractions_${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    const data = await response.json();
+                    showAlert('danger', data.error || 'Failed to export CSV.');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                showAlert('danger', 'Error exporting CSV. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
