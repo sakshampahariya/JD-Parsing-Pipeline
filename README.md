@@ -1,173 +1,96 @@
-# Job Description Pipeline - AI-Powered Data Extraction Tool
+# JD-Parsing-Pipeline
 
-A Flask web application that automatically converts unstructured job descriptions into structured JSON data using OpenAI's GPT-4o-mini model.
+An AI-powered pipeline that converts unstructured job descriptions into clean, structured JSON — extracting role, skills, seniority, location, and salary automatically using Google Gemini.
+
+## What It Does
+
+Recruiters and HR tools often deal with messy, inconsistent job descriptions. This pipeline takes raw JD text (or uploaded PDF/TXT files), runs it through an LLM extraction layer, stores the structured output in a database, and lets you export it as CSV — all through a clean web interface.
 
 ## Features
 
-- **📝 Text Input**: Paste raw job descriptions directly into a text area
-- **📁 File Upload**: Upload PDF or TXT files for batch processing
-- **🤖 AI Extraction**: Uses OpenAI's GPT-4o-mini to extract:
-  - Job Role/Title
-  - Required Skills
-  - Seniority Level
-  - Location
-  - Salary Information
-- **💾 Database Storage**: Automatically stores successful extractions in Supabase
-- **📊 Results Dashboard**: Display results in an interactive table
-- **📥 CSV Export**: Export processed results as CSV for further analysis
-- **🔄 Batch Processing**: Handle multiple files in one go
-- **✅ Error Handling**: Comprehensive error handling and logging
+- Paste text or upload PDF/TXT files for batch processing
+- Extracts: job role, required skills, seniority level, location, salary
+- Stores results in Supabase (PostgreSQL) for persistence
+- Export all results as CSV with one click
+- REST API with `/process`, `/export`, and `/health` endpoints
+- Comprehensive error handling for encoding issues, large files, and API failures
 
 ## Tech Stack
 
-- **Backend**: Flask (Python)
-- **Frontend**: Bootstrap 5, HTML5, CSS3, Vanilla JavaScript
-- **PDF Parsing**: PyPDF2
-- **AI Service**: OpenAI GPT-4o-mini API
-- **Database**: Supabase (PostgreSQL)
-- **Environment**: Python 3.8+
+| Layer      | Technology                              |
+|------------|-----------------------------------------|
+| Backend    | Flask (Python)                          |
+| AI Model   | Google Gemini (via API)                 |
+| Database   | Supabase (PostgreSQL)                   |
+| PDF Parser | PyPDF2                                  |
+| Frontend   | Bootstrap 5, Vanilla JS                 |
 
 ## Project Structure
 
 ```
-jd-pipeline/
-├── app.py                  # Main Flask application
-├── config.py              # Configuration management
-├── database.py            # Supabase database operations
-├── ai_processor.py        # OpenAI integration and extraction logic
-├── utils.py               # File handling and CSV export utilities
-├── requirements.txt       # Python dependencies
-├── .env.example          # Environment variables template
+JD-Parsing-Pipeline/
+├── app.py              # Flask routes and app entry point
+├── ai_processor.py     # Gemini API integration and extraction logic
+├── database.py         # Supabase CRUD operations
+├── config.py           # Environment and config management
+├── utils.py            # File handling, text extraction, CSV export
 ├── templates/
-│   └── index.html        # Frontend HTML template (Bootstrap 5)
-├── static/
-│   └── css/              # Static CSS files
-└── uploads/              # Temporary file storage
+│   └── index.html      # Frontend UI
+├── requirements.txt
+└── supabase_setup.sql  # DB schema
 ```
 
-## Prerequisites
+## Setup
 
-- Python 3.8 or higher
-- Google Gemini API key (FREE - no credit card needed!)
-- Supabase account with a project
-- pip (Python package manager)
-
-## Setup Instructions
-
-### 1. Clone or Create the Project
-
+**1. Clone the repo**
 ```bash
-cd jd-pipeline
+git clone https://github.com/sakshampahariya/JD-Parsing-Pipeline
+cd JD-Parsing-Pipeline
 ```
 
-### 2. Create Virtual Environment
-
-**On Windows:**
+**2. Create and activate a virtual environment**
 ```bash
 python -m venv venv
-venv\Scripts\activate
+source venv/bin/activate      # Windows: venv\Scripts\activate
 ```
 
-**On macOS/Linux:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
-
+**3. Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
+**4. Set environment variables**
 
-1. Copy `.env.example` to `.env`:
-```bash
-copy .env.example .env   # Windows
-cp .env.example .env      # macOS/Linux
+Create a `.env` file:
 ```
-
-2. Edit `.env` and fill in your credentials:
-```env
-ENVIRONMENT=development
-SECRET_KEY=your-super-secret-key-change-in-production
-DEBUG=True
-
-# Get from https://aistudio.google.com/app/apikey
-GEMINI_API_KEY=AIzaSy-your-google-gemini-key-here
-
-# Get from Supabase Project Settings
+GEMINI_API_KEY=your_gemini_key_here
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-supabase-api-key-here
+SUPABASE_KEY=your_supabase_key_here
+SECRET_KEY=your_secret_key
 ```
 
-### 5. Set Up Supabase Database Table
+Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com/app/apikey).
 
-In your Supabase project, create a table named `job_extractions` with the following SQL:
+**5. Set up the database**
 
-```sql
-CREATE TABLE job_extractions (
-  id BIGINT PRIMARY KEY GENERATED BY DEFAULT AS IDENTITY,
-  role VARCHAR(255),
-  skills TEXT[],
-  seniority VARCHAR(50),
-  location VARCHAR(255),
-  salary VARCHAR(255),
-  raw_jd TEXT,
-  source VARCHAR(255),
-  processed_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+Run `supabase_setup.sql` in your Supabase SQL editor to create the `job_extractions` table.
 
--- Optional: Create indexes for better performance
-CREATE INDEX idx_role ON job_extractions(role);
-CREATE INDEX idx_created_at ON job_extractions(created_at DESC);
-```
-
-### 6. Run the Application
-
+**6. Run the app**
 ```bash
 python app.py
 ```
 
-The application will start at `http://localhost:5000`
+Visit `http://localhost:5000`
 
-## Usage
+## API
 
-### Via Web Interface
-
-1. **Open Dashboard**: Visit `http://localhost:5000` in your browser
-2. **Input Job Description**: 
-   - Paste text directly in the textarea, OR
-   - Upload PDF/TXT files by dragging & dropping or clicking the upload area
-3. **Process**: Click the "Process" button
-4. **View Results**: See extracted data in the results table
-5. **Export**: Click "Export as CSV" to download results
-
-### Supported File Formats
-
-- **TXT**: Plain text files (UTF-8 or Latin-1 encoding)
-- **PDF**: PDF documents (text-extractable)
-- **Max Size**: 16MB per file
-
-## API Endpoints
-
-### POST `/process`
-
-Process job descriptions from text or files.
-
-**Parameters:**
-- `jd_text` (optional): Raw job description text
-- `files` (optional): Multiple file uploads (PDF/TXT)
+### `POST /process`
+Submit a job description (text or file upload).
 
 **Response:**
 ```json
 {
   "success": true,
-  "total": 2,
-  "successful": 2,
-  "failed": 0,
   "results": [
     {
       "status": "success",
@@ -175,206 +98,40 @@ Process job descriptions from text or files.
         "role": "Senior Software Engineer",
         "skills": ["Python", "AWS", "Docker"],
         "seniority": "Senior",
-        "location": "San Francisco, CA",
+        "location": "Remote",
         "salary": "$150,000 - $200,000"
-      },
-      "source": "manual_input"
+      }
     }
   ]
 }
 ```
 
-### POST `/export`
+### `POST /export`
+Returns a CSV of all extraction results.
 
-Export extraction results as CSV.
+### `GET /health`
+Returns service status and DB connection state.
 
-**Parameters:**
-- `results`: JSON array of extraction results
+## Example Input
 
-**Response**: CSV file download
+```
+We are seeking a Senior Backend Engineer with 5+ years of experience.
+Required: Python, FastAPI, PostgreSQL, Docker, AWS.
+Location: Remote / Bangalore. Salary: ₹30–45 LPA.
+```
 
-### GET `/health`
+## Example Output
 
-Health check endpoint.
-
-**Response:**
 ```json
 {
-  "status": "healthy",
-  "ai_processor": "ready",
-  "database": "connected"
+  "role": "Senior Backend Engineer",
+  "skills": ["Python", "FastAPI", "PostgreSQL", "Docker", "AWS"],
+  "seniority": "Senior",
+  "location": "Remote / Bangalore",
+  "salary": "₹30–45 LPA"
 }
 ```
 
-## Code Organization
-
-### `app.py`
-- Flask application initialization
-- Route definitions (`/`, `/process`, `/export`, `/health`)
-- Error handlers
-- Service initialization (AI processor, database manager)
-
-### `config.py`
-- Configuration classes for development/production
-- Environment variable management
-- API keys and database credentials
-
-### `database.py`
-- Supabase client initialization
-- CRUD operations (insert, retrieve extractions)
-- Batch insertion support
-- Connection management (singleton pattern)
-
-### `ai_processor.py`
-- OpenAI GPT-4o-mini integration
-- Job description parsing
-- JSON extraction and validation
-- Batch processing support
-
-### `utils.py`
-- File upload handling (PDF/TXT)
-- Text extraction from files
-- CSV export generation
-- File validation and error handling
-
-### `templates/index.html`
-- Bootstrap 5 responsive UI
-- JavaScript for form handling
-- Drag-and-drop file upload
-- Results display and CSV export
-
-## Error Handling
-
-The application includes comprehensive error handling for:
-
-- **Invalid API Keys**: Returns 503 with clear message
-- **File Upload Issues**: Validates extension, size, and encoding
-- **API Failures**: Logs errors and returns user-friendly messages
-- **Database Connection**: Gracefully handles disconnections
-- **Large Files**: Rejects files >16MB
-- **Invalid JSON**: Attempts recovery or marks as failed
-- **Encoding Issues**: Supports UTF-8 and Latin-1 for text files
-
-## Logging
-
-The application logs to console with the following format:
-```
-%(asctime)s - %(name)s - %(levelname)s - %(message)s
-```
-
-View logs in the terminal where the Flask app is running.
-
-## Example Job Description
-
-```
-We are seeking a Senior Full Stack Developer with 5+ years of experience.
-
-Required Skills:
-- Python/Django or Flask
-- React.js or Vue.js
-- PostgreSQL/MongoDB
-- Docker & Kubernetes
-- AWS or GCP
-- RESTful API Design
-- System Design
-
-Responsibilities:
-- Design and develop scalable web applications
-- Lead code reviews and mentor junior developers
-- Collaborate with product team on feature specifications
-
-Location: Remote or San Francisco Bay Area
-Salary: $150,000 - $200,000 per year
-Benefits: Health Insurance, 401k, Stock Options
-```
-
-## Production Deployment
-
-### Important Changes:
-1. Change `ENVIRONMENT` to `production`
-2. Set `DEBUG=False`
-3. Generate a strong `SECRET_KEY`
-4. Use production-grade WSGI server (Gunicorn, uWSGI)
-5. Set up HTTPS/SSL
-6. Configure firewall and security headers
-7. Set up monitoring and alerting
-
-### Example with Gunicorn:
-```bash
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
-```
-
-## Troubleshooting
-
-### Issue: "AI processor not available"
-- **Solution**: Ensure `GEMINI_API_KEY` is set in `.env` and the Flask app is restarted
-
-### Issue: "Table 'job_extractions' does not exist"
-- **Solution**: Run the SQL setup script in your Supabase dashboard
-
-### Issue: PDF text extraction returns empty
-- **Solution**: Some PDFs have text as images. OCR support can be added with `pytesseract`
-
-### Issue: CORS errors when uploading files
-- **Solution**: Already configured in the HTML form as multipart/form-data
-
-### Issue: Files upload but don't process
-- **Solution**: Check file size (<16MB) and format (PDF or TXT)
-
-## Security Considerations
-
-1. **API Keys**: Never commit `.env` files to version control
-2. **File Uploads**: Validate file types and sizes
-3. **Input Sanitization**: Flask automatically escapes template content
-4. **CORS**: Configure as needed for production
-5. **Rate Limiting**: Consider adding for production use
-6. **SSL/TLS**: Use HTTPS in production
-
-## Future Enhancements
-
-- [ ] Add authentication/user accounts
-- [ ] Implement rate limiting
-- [ ] Add OCR support for image-based PDFs
-- [ ] Support more file formats (DOCX, PPTX)
-- [ ] Advanced filtering and search in results
-- [ ] Historical tracking and analytics
-- [ ] Email notifications for batch processing
-- [ ] API token generation for programmatic access
-- [ ] Multi-language support
-- [ ] Custom extraction templates
-
-## Performance Optimization
-
-- **Batch Processing**: Process multiple files efficiently
-- **Caching**: Consider caching extraction results
-- **Async Processing**: For large batches, consider Celery/RQ
-- **Database Indexing**: Indexes are created on key fields
-- **CDN**: Serve static files from CDN in production
-
-## Cost Breakdown
-
-### Google Gemini (AI Model)
-- **Free Tier**: 60 requests per minute
-- **Paid Tier**: $0.075 per 1M input tokens (very affordable!)
-- Perfect for development and small-scale production
-
-### Supabase (Database)
-- **Free Tier**: 500MB storage
-- **Paid Tier**: Scales with your usage
-
----
-
-**🎉 This project uses Google Gemini - completely free for development!**
-
-## Support & Contribution
-
-For issues, suggestions, or contributions, please check the project repository.
-
 ## License
 
-MIT License - Feel free to use this project for personal or commercial purposes.
-
-## Disclaimer
-
-This tool uses OpenAI's GPT-4o-mini API which incurs costs based on token usage. Monitor your OpenAI account for API usage and costs. The accuracy of extraction depends on the quality and structure of input job descriptions.
+MIT
